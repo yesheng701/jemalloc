@@ -133,6 +133,10 @@ prof_malloc_sample_object(tsd_t *tsd, const void *ptr, size_t size,
 		tctx->cnts.accumbytes += usize;
 		tctx->cnts.accumbytes_unbiased += unbiased_bytes;
 	}
+#ifdef HAOMO_MONITOR
+	tctx->tdata->tid = gettid();
+#endif
+
 	bool record_recent = prof_recent_alloc_prepare(tsd, tctx);
 	tctx->prepared = false;
 	malloc_mutex_unlock(tsd_tsdn(tsd), tctx->tdata->lock);

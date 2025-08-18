@@ -39,7 +39,7 @@ tsd_cleanup_wrapper(void *arg) {
 			/* Trigger another cleanup round. */
 			if (pthread_setspecific(tsd_tsd, (void *)wrapper) != 0)
 			{
-				malloc_write("<jemalloc>: Error setting TSD\n");
+				malloc_write("<jemalloc>: Error setting TSD : tsd_cleanup_wrapper\n");
 				if (opt_abort) {
 					abort();
 				}
@@ -56,7 +56,7 @@ tsd_wrapper_set(tsd_wrapper_t *wrapper) {
 		return;
 	}
 	if (pthread_setspecific(tsd_tsd, (void *)wrapper) != 0) {
-		malloc_write("<jemalloc>: Error setting TSD\n");
+		malloc_write("<jemalloc>: Error setting TSD : tsd_wrapper_set\n");
 		abort();
 	}
 }

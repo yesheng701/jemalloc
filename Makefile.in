@@ -156,6 +156,16 @@ C_SRCS := $(srcroot)src/jemalloc.c \
 	$(srcroot)src/ticker.c \
 	$(srcroot)src/tsd.c \
 	$(srcroot)src/witness.c
+
+ifneq ($(findstring nto-qnx, $(CXX)), )
+C_SRCS += $(srcroot)src/nto/_key_table.c \
+	$(srcroot)src/nto/pthread_exit.c \
+	$(srcroot)src/nto/pthread_getspecific.c \
+	$(srcroot)src/nto/pthread_key.c \
+	$(srcroot)src/nto/pthread_key_data.c \
+	$(srcroot)src/nto/pthread_setspecific.c
+endif
+
 ifeq ($(enable_zone_allocator), 1)
 C_SRCS += $(srcroot)src/zone.c
 endif

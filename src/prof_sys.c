@@ -395,15 +395,18 @@ prof_dump_open_file_t *JET_MUTABLE prof_dump_open_file =
 
 static void
 prof_dump_open(prof_dump_arg_t *arg, const char *filename) {
+#ifndef HAOMO_NO_PROFILE_OUTPUT
 	arg->prof_dump_fd = prof_dump_open_file(filename, 0644);
 	prof_dump_check_possible_error(arg, arg->prof_dump_fd == -1,
 	    "<jemalloc>: failed to open \"%s\"\n", filename);
+#endif
 }
 
 prof_dump_write_file_t *JET_MUTABLE prof_dump_write_file = malloc_write_fd;
 
 static void
 prof_dump_flush(void *opaque, const char *s) {
+#ifndef HAOMO_NO_PROFILE_OUTPUT
 	cassert(config_prof);
 	prof_dump_arg_t *arg = (prof_dump_arg_t *)opaque;
 	if (!arg->error) {
@@ -412,13 +415,16 @@ prof_dump_flush(void *opaque, const char *s) {
 		prof_dump_check_possible_error(arg, err == -1,
 		    "<jemalloc>: failed to write during heap profile flush\n");
 	}
+#endif
 }
 
 static void
 prof_dump_close(prof_dump_arg_t *arg) {
+#ifndef HAOMO_NO_PROFILE_OUTPUT
 	if (arg->prof_dump_fd != -1) {
 		close(arg->prof_dump_fd);
 	}
+#endif
 }
 
 #ifndef _WIN32
@@ -503,14 +509,15 @@ prof_dump(tsd_t *tsd, bool propagate_err, const char *filename,
 
 	pre_reentrancy(tsd, NULL);
 	malloc_mutex_lock(tsd_tsdn(tsd), &prof_dump_mtx);
-
 	prof_dump_open(&arg, filename);
 	buf_writer_t buf_writer;
 	bool err = buf_writer_init(tsd_tsdn(tsd), &buf_writer, prof_dump_flush,
 	    &arg, prof_dump_buf, PROF_DUMP_BUFSIZE);
 	assert(!err);
 	prof_dump_impl(tsd, buf_writer_cb, &buf_writer, tdata, leakcheck);
+#ifndef __QNX__
 	prof_dump_maps(&buf_writer);
+#endif 
 	buf_writer_terminate(tsd_tsdn(tsd), &buf_writer);
 	prof_dump_close(&arg);
 

@@ -3,6 +3,11 @@
 
 #include "jemalloc/internal/assert.h"
 
+#if defined __QNX__
+#include <sys/neutrino.h>
+#include <sys/syspage.h>
+#endif
+
 JEMALLOC_DIAGNOSTIC_DISABLE_SPURIOUS
 
 /******************************************************************************/
@@ -80,6 +85,7 @@ background_thread_info_init(tsdn_t *tsdn, background_thread_info_t *info) {
 
 static inline bool
 set_current_thread_affinity(int cpu) {
+#ifndef __QNX__
 #if defined(JEMALLOC_HAVE_SCHED_SETAFFINITY)
 	cpu_set_t cpuset;
 #else
@@ -109,6 +115,41 @@ set_current_thread_affinity(int cpu) {
 	cpuset_destroy(cpuset);
 #  endif
 	return ret != 0;
+#endif
+#else
+    int *rsizep, rsize, size_tot;
+    unsigned *rmaskp, *inheritp;
+
+    rsize = RMSK_SIZE(_syspage_ptr->num_cpu);
+
+    size_tot = sizeof(*rsizep);
+    size_tot += sizeof(*rmaskp) * rsize;
+    size_tot += sizeof(*inheritp) * rsize;
+
+    if ((rsizep = (int *)malloc(size_tot)) == NULL) {
+        return false;
+    }
+
+    memset(rsizep, 0x00, size_tot);
+
+    *rsizep = rsize;
+    rmaskp = (unsigned *)(rsizep + 1);
+    inheritp = rmaskp + rsize;
+
+    if (cpu < _syspage_ptr->num_cpu) {
+        RMSK_SET(cpu, rmaskp);
+        RMSK_SET(cpu, inheritp);
+    }
+
+    if (ThreadCtlExt(getpid(), pthread_self(), _NTO_TCTL_RUNMASK_GET_AND_SET_INHERIT, rsizep) ==
+        -1) {
+        free(rsizep);
+        // std::cout << __FUNCTION__ << " thread " << tid << " set affinity failed, E = " << errno
+        //           << " : " << strerror(errno) << std::endl;
+        return false;
+    }
+    free(rsizep);
+    return true;
 #endif
 }
 

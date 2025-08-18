@@ -147,6 +147,9 @@ typedef rb_tree(prof_gctx_t) prof_gctx_tree_t;
 struct prof_tdata_s {
 	malloc_mutex_t		*lock;
 
+#ifdef HAOMO_MONITOR
+	int                     tid;
+#endif
 	/* Monotonically increasing unique thread identifier. */
 	uint64_t		thr_uid;
 

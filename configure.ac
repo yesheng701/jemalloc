@@ -1098,6 +1098,18 @@ case "${host}" in
   *-*-mingw* | *-*-cygwin*)
     wrap_syms="${wrap_syms} tls_callback"
     ;;
+  *-*-nto-qnx*)
+    wrap_syms="${wrap_syms} pthread_key_create"
+    wrap_syms="${wrap_syms} pthread_key_delete"
+    wrap_syms="${wrap_syms} pthread_setspecific"
+    wrap_syms="${wrap_syms} pthread_getspecific"
+    wrap_syms="${wrap_syms} pthread_exit"
+    wrap_syms="${wrap_syms} _key_get"
+    wrap_syms="${wrap_syms} _process_keys"
+    wrap_syms="${wrap_syms} _key_delete_table"
+    wrap_syms="${wrap_syms} _key_thread_exit"
+    wrap_syms="${wrap_syms} __pthread_key_exit"
+    ;;
   *)
     ;;
 esac
@@ -1279,6 +1291,8 @@ AC_ARG_ENABLE([prof],
   enable_prof="0"
 else
   enable_prof="1"
+  AC_DEFINE([HAOMO_MONITOR],[ ],[ ])
+  AC_DEFINE([HAOMO_NO_PROFILE_OUTPUT],[ ],[ ])
 fi
 ],
 [enable_prof="0"]
@@ -1376,7 +1390,7 @@ fi
 
 if test "x$backtrace_method" = "x" ; then
   backtrace_method="none (disabling profiling)"
-  enable_prof="0"
+  
 fi
 AC_MSG_CHECKING([configured backtracing method])
 AC_MSG_RESULT([$backtrace_method])
