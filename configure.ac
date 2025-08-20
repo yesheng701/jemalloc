@@ -1291,7 +1291,7 @@ AC_ARG_ENABLE([prof],
   enable_prof="0"
 else
   enable_prof="1"
-  AC_DEFINE([HAOMO_MONITOR],[ ],[ ])
+  dnl AC_DEFINE([HAOMO_MONITOR],[ ],[ ])
   AC_DEFINE([HAOMO_NO_PROFILE_OUTPUT],[ ],[ ])
 fi
 ],
@@ -1390,7 +1390,7 @@ fi
 
 if test "x$backtrace_method" = "x" ; then
   backtrace_method="none (disabling profiling)"
-  
+
 fi
 AC_MSG_CHECKING([configured backtracing method])
 AC_MSG_RESULT([$backtrace_method])
@@ -2417,7 +2417,7 @@ AC_SUBST([enable_initial_exec_tls])
 if test "x${je_cv_tls_model}" = "xyes" -a \
        "x${enable_initial_exec_tls}" = "x1" ; then
   AC_DEFINE([JEMALLOC_TLS_MODEL],
-            [__attribute__((tls_model("initial-exec")))], 
+            [__attribute__((tls_model("initial-exec")))],
             [ ])
 else
   AC_DEFINE([JEMALLOC_TLS_MODEL], [ ], [ ])
