@@ -7,7 +7,7 @@
 #include "jemalloc/internal/malloc_io.h"
 #include "jemalloc/internal/prof_data.h"
 
-#ifdef HAOMO_MONITOR
+#ifdef NAVI_MONITOR
 
 #include <devctl.h>
 #include <sys/neutrino.h>
@@ -768,7 +768,7 @@ prof_tctx_merge_iter(prof_tctx_tree_t *tctxs, prof_tctx_t *tctx, void *arg) {
 }
 
 typedef struct prof_dump_iter_arg_s prof_dump_iter_arg_t;
-#ifdef HAOMO_MONITOR
+#ifdef NAVI_MONITOR
 struct prof_dump_iter_arg_s {
 	tsdn_t *tsdn;
 	write_cb_t *prof_dump_write;
@@ -979,7 +979,7 @@ prof_tdata_dump_iter(prof_tdata_tree_t *tdatas_ptr, prof_tdata_t *tdata,
 	}
 
 	prof_dump_iter_arg_t *arg = (prof_dump_iter_arg_t *)opaque;
-#ifdef HAOMO_MONITOR
+#ifdef NAVI_MONITOR
 	prof_dump_printf(arg->prof_dump_write, arg->cbopaque, "  t%"FMTu64": %d: ",
 	    tdata->thr_uid, tdata->tid);
 #else
@@ -993,7 +993,7 @@ prof_tdata_dump_iter(prof_tdata_tree_t *tdatas_ptr, prof_tdata_t *tdata,
 		arg->prof_dump_write(arg->cbopaque, tdata->thread_name);
 	}
 	arg->prof_dump_write(arg->cbopaque, "\n");
-#ifdef HAOMO_MONITOR
+#ifdef NAVI_MONITOR
 	if (arg->monitor_msg_p != NULL && tdata->tid <= MAX_THREAD_CNT){
 		thread_heap_info_t* thread_heap_info_p;
 		thread_heap_info_p = arg->monitor_msg_p;
@@ -1010,7 +1010,7 @@ prof_tdata_dump_iter(prof_tdata_tree_t *tdatas_ptr, prof_tdata_t *tdata,
 
 static void
 prof_dump_header(prof_dump_iter_arg_t *arg, const prof_cnt_t *cnt_all) {
-#ifdef HAOMO_MONITOR
+#ifdef NAVI_MONITOR
 	int fd = -1;
 	int buffer_len_esitimate;
 	void *p_head = NULL;
@@ -1020,7 +1020,7 @@ prof_dump_header(prof_dump_iter_arg_t *arg, const prof_cnt_t *cnt_all) {
 	    "heap_v2/%"FMTu64"\n  t*: ", ((uint64_t)1U << lg_prof_sample));
 	prof_dump_print_cnts(arg->prof_dump_write, arg->cbopaque, cnt_all);
 	arg->prof_dump_write(arg->cbopaque, "\n");
-#ifdef HAOMO_MONITOR
+#ifdef NAVI_MONITOR
 	//send msg to monitor service
 	if ((fd = open("/dev/monitor", O_RDONLY)) != -1) {
 		buffer_len_esitimate = sizeof(proc_heap_info_t) +  MAX_THREAD_CNT * sizeof(thread_heap_info_t);
@@ -1040,7 +1040,7 @@ prof_dump_header(prof_dump_iter_arg_t *arg, const prof_cnt_t *cnt_all) {
 	malloc_mutex_lock(arg->tsdn, &tdatas_mtx);
 	tdata_tree_iter(&tdatas, NULL, prof_tdata_dump_iter, arg);
 	malloc_mutex_unlock(arg->tsdn, &tdatas_mtx);
-#ifdef HAOMO_MONITOR
+#ifdef NAVI_MONITOR
 	if (fd != -1){
 		if (proc_heap_info_p != NULL){
 			proc_heap_info_p->thread_cnt = arg->total_thread_cnt ;     
@@ -1195,7 +1195,7 @@ prof_dump_impl(tsd_t *tsd, write_cb_t *prof_dump_write, void *cbopaque,
 	size_t leak_ngctx;
 	prof_gctx_tree_t gctxs;
 	prof_dump_prep(tsd, tdata, &cnt_all, &leak_ngctx, &gctxs);
-#ifdef HAOMO_MONITOR
+#ifdef NAVI_MONITOR
 	prof_dump_iter_arg_t prof_dump_iter_arg = {tsd_tsdn(tsd),
 	    prof_dump_write, cbopaque, NULL, 0};
 #else

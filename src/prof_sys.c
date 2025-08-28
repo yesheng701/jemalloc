@@ -395,7 +395,7 @@ prof_dump_open_file_t *JET_MUTABLE prof_dump_open_file =
 
 static void
 prof_dump_open(prof_dump_arg_t *arg, const char *filename) {
-#ifndef HAOMO_NO_PROFILE_OUTPUT
+#ifndef NAVI_NO_PROFILE_OUTPUT
 	arg->prof_dump_fd = prof_dump_open_file(filename, 0644);
 	prof_dump_check_possible_error(arg, arg->prof_dump_fd == -1,
 	    "<jemalloc>: failed to open \"%s\"\n", filename);
@@ -406,7 +406,7 @@ prof_dump_write_file_t *JET_MUTABLE prof_dump_write_file = malloc_write_fd;
 
 static void
 prof_dump_flush(void *opaque, const char *s) {
-#ifndef HAOMO_NO_PROFILE_OUTPUT
+#ifndef NAVI_NO_PROFILE_OUTPUT
 	cassert(config_prof);
 	prof_dump_arg_t *arg = (prof_dump_arg_t *)opaque;
 	if (!arg->error) {
@@ -420,7 +420,7 @@ prof_dump_flush(void *opaque, const char *s) {
 
 static void
 prof_dump_close(prof_dump_arg_t *arg) {
-#ifndef HAOMO_NO_PROFILE_OUTPUT
+#ifndef NAVI_NO_PROFILE_OUTPUT
 	if (arg->prof_dump_fd != -1) {
 		close(arg->prof_dump_fd);
 	}

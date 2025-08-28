@@ -160,9 +160,3 @@ if [ $? -ne 0 ]; then
 fi
 
 make -j4
-
-
-                                # "--sysroot="+rootfs_path+"aarch64le",
-                                # "-I"+rootfs_path+"/usr/include",
-                                # "-I"+gcc_target_path + "usr/include",
-                                # "-I"+gcc_path + "usr/lib/gcc/aarch64-unknown-nto-qnx7.0.0/5.4.0/include",

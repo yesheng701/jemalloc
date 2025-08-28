@@ -133,7 +133,7 @@ prof_malloc_sample_object(tsd_t *tsd, const void *ptr, size_t size,
 		tctx->cnts.accumbytes += usize;
 		tctx->cnts.accumbytes_unbiased += unbiased_bytes;
 	}
-#ifdef HAOMO_MONITOR
+#ifdef NAVI_MONITOR
 	tctx->tdata->tid = gettid();
 #endif
 
