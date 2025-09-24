@@ -39,7 +39,7 @@ case "$TARGET" in
 esac
 
 export CC="aarch64-unknown-nto-qnx$QNX_VERSION-gcc"
-export CXX="aarch64-unknown-nto-qnx$QNX_VERSION-g++"
+export CXX="aarch64-unknown-nto-qnx$QNX_VERSION-gcc"
 export AR="aarch64-unknown-nto-qnx$QNX_VERSION-ar"
 export RANLIB="aarch64-unknown-nto-qnx$QNX_VERSION-ranlib"
 export PATH="$QNX_HOST/usr/bin:$PATH"
@@ -68,6 +68,14 @@ echo "Configuring for $TARGET..."
 
 case "$TARGET" in
     qnx710)
+        COMMON_CFLAGS="-Wall -Wextra -Wno-unused-parameter -fPIC -D__QNX__ -D_QNX_SOURCE --sysroot=$SYS_ROOT"
+        COMMON_CXXFLAGS="$COMMON_CFLAGS -std=c++14 -nostdinc++ -isystem $QNX_TARGET/usr/include/c++/v1"
+        COMMON_LDFLAGS="\
+            --sysroot=$SYS_ROOT \
+            -nodefaultlibs \
+            -L$SYS_ROOT/usr/lib \
+            -L$QNX_TARGET/aarch64le/usr/lib \
+            -lc++ -lc -lm -latomic"
         ../configure \
             --prefix=$OUTPUT \
             --host=aarch64-unknown-nto-qnx$QNX_VERSION \
@@ -81,32 +89,10 @@ case "$TARGET" in
             CXX=$CXX \
             AR=$AR \
             RANLIB=$RANLIB \
-            CFLAGS="\
-                -Wall \
-                -Wextra \
-                -Wno-unused-parameter \
-                -fPIC \
-                -D__QNX__ \
-                -D_QNX_SOURCE \
-                -fno-stack-protector \
-                --sysroot=$SYS_ROOT \
-                -I$SYS_ROOT/usr/include \
-                -I$QNX_TARGET/usr/include \
-                -I$QNX_HOST/usr/lib/gcc/aarch64-unknown-nto-qnx7.1.0/8.3.0/include \
-                -nostdinc" \
-            CXXFLAGS="\
-                -Wall \
-                -Wextra \
-                -Wno-unused-parameter \
-                -fPIC \
-                -D__QNX__ \
-                -D_QNX_SOURCE \
-                --sysroot=$SYS_ROOT \
-                -I$QNX_TARGET/usr/include/c++/8.3.0 \
-                -I$QNX_TARGET/usr/include/c++/8.3.0/aarch64-unknown-nto-qnx7.1.0/ \
-                -I$SYS_ROOT/usr/include \
-                -I$QNX_TARGET/usr/include" \
-            LDFLAGS="--sysroot=$SYS_ROOT -L$SYS_ROOT/usr/lib -latomic -lc++ -lc"
+            CFLAGS="$COMMON_CFLAGS" \
+            CXXFLAGS="$COMMON_CXXFLAGS" \
+            LDFLAGS="$COMMON_LDFLAGS" \
+            LIBS="-lc++ -lc -lm -latomic"
         ;;
     qnx700)
         ../configure \

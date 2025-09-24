@@ -312,8 +312,8 @@ if test "x$enable_cxx" = "x1" ; then
     JE_CXXFLAGS_ADD([-g3])
 
     SAVED_LIBS="${LIBS}"
-    JE_APPEND_VS(LIBS, -lstdc++)
-    JE_COMPILABLE([libstdc++ linkage], [
+    JE_APPEND_VS(LIBS, -lc++)
+    JE_COMPILABLE([libc++ linkage], [
 #include <stdlib.h>
 ], [[
 	int *arr = (int *)malloc(sizeof(int) * 42);
@@ -1291,8 +1291,8 @@ AC_ARG_ENABLE([prof],
   enable_prof="0"
 else
   enable_prof="1"
-  AC_DEFINE([NAVI_MONITOR],[ ],[ ])
-  AC_DEFINE([NAVI_NO_PROFILE_OUTPUT],[ ],[ ])
+  del AC_DEFINE([NAVI_MONITOR],[ ],[ ])
+  del AC_DEFINE([NAVI_NO_PROFILE_OUTPUT],[ ],[ ])
 fi
 ],
 [enable_prof="0"]
