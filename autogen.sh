@@ -83,6 +83,7 @@ case "$TARGET" in
             --enable-shared \
             --enable-cxx \
             --enable-prof \
+            --enable-stats \
             --disable-prof-libgcc \
             --disable-prof-gcc \
             CC=$CC \
