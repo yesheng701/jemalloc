@@ -1291,7 +1291,7 @@ AC_ARG_ENABLE([prof],
   enable_prof="0"
 else
   enable_prof="1"
-  dnl AC_DEFINE([NAVI_MONITOR],[ ],[ ])
+  AC_DEFINE([NAVI_MONITOR],[ ],[ ])
   AC_DEFINE([NAVI_NO_PROFILE_OUTPUT],[ ],[ ])
 fi
 ],

@@ -1032,7 +1032,7 @@ prof_dump_header(prof_dump_iter_arg_t *arg, const prof_cnt_t *cnt_all) {
 			proc_heap_info_p->sampling = ((uint64_t)1U << lg_prof_sample);
 			proc_heap_info_p->objs_all = cnt_all->curobjs;
 			proc_heap_info_p->bytes_all = cnt_all->curbytes;
-			
+
 			arg->monitor_msg_p = p_head + sizeof(proc_heap_info_t);
 		}
 	}
@@ -1043,7 +1043,7 @@ prof_dump_header(prof_dump_iter_arg_t *arg, const prof_cnt_t *cnt_all) {
 #ifdef NAVI_MONITOR
 	if (fd != -1){
 		if (proc_heap_info_p != NULL){
-			proc_heap_info_p->thread_cnt = arg->total_thread_cnt ;     
+			proc_heap_info_p->thread_cnt = arg->total_thread_cnt ;
 			devctl( fd, MONITOR_SET_PROC_HEAP, p_head,
 				sizeof(proc_heap_info_t) +  arg->total_thread_cnt * sizeof(thread_heap_info_t), NULL);
 			free(p_head);
