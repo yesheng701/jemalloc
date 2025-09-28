@@ -92,7 +92,7 @@ echo "Configuring for $TARGET..."
 case "$TARGET" in
     qnx710)
         COMMON_CFLAGS="-Wall -Wextra -Wno-unused-parameter -fPIC"
-        COMMON_CFLAGS="$COMMON_CFLAGS -D__QNX__ -D_QNX_SOURCE --sysroot=$SYS_ROOT"
+        COMMON_CFLAGS="$COMMON_CFLAGS -D_QNX_SOURCE --sysroot=$SYS_ROOT"
         COMMON_CXXFLAGS="$COMMON_CFLAGS -std=c++14"
         COMMON_CXXFLAGS="$COMMON_CXXFLAGS -nostdinc++ -isystem $QNX_TARGET/usr/include/c++/v1"
         COMMON_LDFLAGS="--sysroot=$SYS_ROOT -nodefaultlibs"
@@ -119,7 +119,7 @@ case "$TARGET" in
         ;;
     qnx700)
         COMMON_CFLAGS="-Wall -Wextra -Wno-unused-parameter -fPIC"
-        COMMON_CFLAGS="$COMMON_CFLAGS -D__QNX__ -D_QNX_SOURCE -fno-stack-protector"
+        COMMON_CFLAGS="$COMMON_CFLAGS -D_QNX_SOURCE -fno-stack-protector"
         COMMON_CFLAGS="$COMMON_CFLAGS --sysroot=$SYS_ROOT"
         COMMON_CFLAGS="$COMMON_CFLAGS -I$SYS_ROOT/usr/include -I$QNX_TARGET/usr/include"
         COMMON_CFLAGS="$COMMON_CFLAGS -I$QNX_HOST/usr/lib/gcc/aarch64-unknown-nto-qnx7.0.0/5.4.0/include"
@@ -164,11 +164,9 @@ case "$TARGET" in
             --host=aarch64-oe-linux \
             --disable-static \
             --enable-shared \
-            --disable-prof \
-            --disable-stats \
-            --disable-cxx \
-            --disable-debug \
-            --disable-fill \
+            --enable-cxx \
+            --enable-prof \
+            --enable-stats \
             CC=$CC \
             CXX=$CXX \
             AR=$AR \

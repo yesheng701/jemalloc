@@ -1291,8 +1291,8 @@ AC_ARG_ENABLE([prof],
   enable_prof="0"
 else
   enable_prof="1"
-  del AC_DEFINE([NAVI_MONITOR],[ ],[ ])
-  del AC_DEFINE([NAVI_NO_PROFILE_OUTPUT],[ ],[ ])
+  AC_DEFINE([NAVI_MONITOR],[ ],[ ])
+  AC_DEFINE([NAVI_NO_PROFILE_OUTPUT],[ ],[ ])
 fi
 ],
 [enable_prof="0"]

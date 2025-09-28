@@ -517,7 +517,7 @@ prof_dump(tsd_t *tsd, bool propagate_err, const char *filename,
 	prof_dump_impl(tsd, buf_writer_cb, &buf_writer, tdata, leakcheck);
 #ifndef __QNX__
 	prof_dump_maps(&buf_writer);
-#endif 
+#endif
 	buf_writer_terminate(tsd_tsdn(tsd), &buf_writer);
 	prof_dump_close(&arg);
 
