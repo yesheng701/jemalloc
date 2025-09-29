@@ -288,6 +288,17 @@ AC_SUBST([SPECIFIED_CFLAGS])
 AC_SUBST([EXTRA_CFLAGS])
 AC_PROG_CPP
 
+AC_ARG_ENABLE([stdcxx],
+  [AS_HELP_STRING([--disable-stdcxx], [Disable Std C++ integration])],
+if test "x$enable_stdcxx" = "xno" ; then
+  enable_stdcxx="0"
+else
+  enable_stdcxx="1"
+fi
+,
+enable_stdcxx="1"
+)
+
 AC_ARG_ENABLE([cxx],
   [AS_HELP_STRING([--disable-cxx], [Disable C++ integration])],
 if test "x$enable_cxx" = "xno" ; then
@@ -312,14 +323,26 @@ if test "x$enable_cxx" = "x1" ; then
     JE_CXXFLAGS_ADD([-g3])
 
     SAVED_LIBS="${LIBS}"
-    JE_APPEND_VS(LIBS, -lc++)
-    JE_COMPILABLE([libc++ linkage], [
+    if test "x$enable_stdcxx" = "x1" ; then
+        JE_APPEND_VS(LIBS, -lstdc++)
+        JE_COMPILABLE([libstdc++ linkage], [
 #include <stdlib.h>
 ], [[
-	int *arr = (int *)malloc(sizeof(int) * 42);
-	if (arr == NULL)
-		return 1;
+    int *arr = (int *)malloc(sizeof(int) * 42);
+    if (arr == NULL)
+        return 1;
 ]], [je_cv_libstdcxx])
+    else
+        JE_APPEND_VS(LIBS, -lc++)
+        JE_COMPILABLE([libc++ linkage], [
+#include <stdlib.h>
+], [[
+    int *arr = (int *)malloc(sizeof(int) * 42);
+    if (arr == NULL)
+        return 1;
+]], [je_cv_libstdcxx])
+    fi
+
     if test "x${je_cv_libstdcxx}" = "xno" ; then
       LIBS="${SAVED_LIBS}"
     fi

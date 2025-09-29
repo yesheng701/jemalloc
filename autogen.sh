@@ -137,6 +137,7 @@ case "$TARGET" in
             --enable-prof \
             --enable-stats \
             --disable-cxx \
+            --disable-stdcxx \
             --disable-prof-libgcc \
             --disable-prof-gcc \
             CC=$CC \
@@ -162,14 +163,18 @@ case "$TARGET" in
         COMMON_CXXFLAGS="$COMMON_CXXFLAGS -std=gnu11"
         COMMON_CXXFLAGS="$COMMON_CXXFLAGS -std=c++11"
         COMMON_LDFLAGS="--sysroot=$SYS_ROOT -Wl,--as-needed"
+        COMMON_LDFLAGS="$COMMON_LDFLAGS -L$SYS_ROOT/usr/lib -L$SYS_ROOT/usr/lib64 -L$SYS_ROOT/lib -L$SYS_ROOT/lib64"
         COMMON_LDFLAGS="$COMMON_LDFLAGS -Wl,-rpath-link,$SYS_ROOT/usr/lib:$SYS_ROOT/usr/lib64:$SYS_ROOT/lib:$SYS_ROOT/lib64"
+        COMMON_LDFLAGS="$COMMON_LDFLAGS -lstdc++ -lm -lpthread"
         ../configure \
             --prefix=$OUTPUT \
             --host=aarch64-oe-linux \
             --disable-static \
             --enable-shared \
             --enable-cxx \
+            --enable-stdcxx \
             --enable-prof \
+            --enable-stats \
             CC=$CC \
             CXX=$CXX \
             AR=$AR \
@@ -177,7 +182,7 @@ case "$TARGET" in
             CFLAGS="$COMMON_CFLAGS" \
             CXXFLAGS="$COMMON_CXXFLAGS" \
             LDFLAGS="$COMMON_LDFLAGS"
-            LIBS="-lstdc++ -lpthread -lm"
+            LIBS="-lstdc++ -lm -lpthread"
         ;;
     *)
         ;;
