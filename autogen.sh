@@ -125,7 +125,7 @@ case "$TARGET" in
         COMMON_CFLAGS="$COMMON_CFLAGS -I$QNX_HOST/usr/lib/gcc/aarch64-unknown-nto-qnx7.0.0/5.4.0/include"
         COMMON_CFLAGS="$COMMON_CFLAGS -nostdinc"
         COMMON_CXXFLAGS="-Wall -Wextra -Wno-unused-parameter -fPIC"
-        COMMON_CXXFLAGS="$COMMON_CXXFLAGS -D__QNX__ -D_QNX_SOURCE --sysroot=$SYS_ROOT"
+        COMMON_CXXFLAGS="$COMMON_CXXFLAGS -D_QNX_SOURCE --sysroot=$SYS_ROOT"
         COMMON_CXXFLAGS="$COMMON_CXXFLAGS -I$QNX_TARGET/usr/include/c++/5.4.0"
         COMMON_CXXFLAGS="$COMMON_CXXFLAGS -I$QNX_TARGET/usr/include/c++/5.4.0/aarch64-unknown-nto-qnx7.0.0/"
         COMMON_CXXFLAGS="$COMMON_CXXFLAGS -I$SYS_ROOT/usr/include -I$QNX_TARGET/usr/include"
@@ -134,8 +134,9 @@ case "$TARGET" in
             --host=aarch64-unknown-nto-qnx$QNX_VERSION \
             --disable-static \
             --enable-shared \
-            --enable-cxx \
             --enable-prof \
+            --enable-stats \
+            --disable-cxx \
             --disable-prof-libgcc \
             --disable-prof-gcc \
             CC=$CC \
@@ -176,7 +177,7 @@ case "$TARGET" in
             CFLAGS="$COMMON_CFLAGS" \
             CXXFLAGS="$COMMON_CXXFLAGS" \
             LDFLAGS="$COMMON_LDFLAGS"
-            # LIBS="-lstdc++ -lpthread -lm"
+            LIBS="-lstdc++ -lpthread -lm"
         ;;
     *)
         ;;
