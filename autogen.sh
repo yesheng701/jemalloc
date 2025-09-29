@@ -6,6 +6,7 @@ usage() {
     echo "  $0 qnx710"
     echo "  $0 qnx700"
     echo "  $0 sa8620p"
+    echo "  $0 j6e"
     exit 1
 }
 
@@ -40,8 +41,15 @@ case "$TARGET" in
         export GCC_HOST="$GCC_PATH/usr/bin/aarch64-oe-linux"
         export OUTPUT="$WORKPACE_PATH/build_sa8620p"
         ;;
+    j6e)
+        export CROSSTOOL_PATH="/home/shaneye/Workspace/crosstools/nexus_j6e"
+        export GCC_PATH="$CROSSTOOL_PATH/toolchain/aarch64/gcc-12.2"
+        export SYS_ROOT="$CROSSTOOL_PATH/rootfs/j6e-ubuntu-base-22.04-aarch64"
+        export GCC_HOST="$GCC_PATH/bin"
+        export OUTPUT="$WORKPACE_PATH/build_j6e"
+        ;;
     *)
-        echo "Error: Unsupported target '$TARGET'. Choose 'qnx710', 'qnx700', or 'sa8620p'."
+        echo "Error: Unsupported target '$TARGET'. Choose 'qnx710', 'qnx700', 'sa8620p' or 'j6e'."
         usage
         ;;
 esac
@@ -52,6 +60,12 @@ if [ "$TARGET" = "sa8620p" ]; then
     export AR="$GCC_HOST/aarch64-oe-linux-ar"
     export RANLIB="$GCC_HOST/aarch64-oe-linux-ranlib"
     export PATH="$GCC_HOST:$PATH"
+elif [ "$TARGET" = "j6e" ]; then
+    export CC="$GCC_HOST/aarch64-none-linux-gnu-gcc"
+    export CXX="$GCC_HOST/aarch64-none-linux-gnu-g++"
+    export AR="$GCC_HOST/aarch64-none-linux-gnu-ar"
+    export RANLIB="$GCC_HOST/aarch64-none-linux-gnu-ranlib"
+    export PATH="$GCC_HOST:$PATH"
 else
     export CC="aarch64-unknown-nto-qnx$QNX_VERSION-gcc"
     export CXX="aarch64-unknown-nto-qnx$QNX_VERSION-gcc"
@@ -60,7 +74,7 @@ else
     export PATH="$QNX_HOST/usr/bin:$PATH"
 fi
 
-if [ "$TARGET" = "sa8620p" ]; then
+if [ "$TARGET" = "sa8620p" || "$TARGET" = "j6e" ]; then
     echo "Using CROSSTOOL_PATH: $CROSSTOOL_PATH"
     echo "Using GCC_PATH: $GCC_PATH"
     echo "Using SYS_ROOT: $SYS_ROOT"
@@ -104,6 +118,7 @@ case "$TARGET" in
             --disable-static \
             --enable-shared \
             --enable-cxx \
+            --disable-stdcxx \
             --enable-prof \
             --enable-stats \
             --disable-prof-libgcc \
@@ -145,8 +160,7 @@ case "$TARGET" in
             AR=$AR \
             RANLIB=$RANLIB \
             CFLAGS="$COMMON_CFLAGS" \
-            CXXFLAGS="$COMMON_CXXFLAGS" \
-            LDFLAGS="$COMMON_LDFLAGS"
+            CXXFLAGS="$COMMON_CXXFLAGS"
         ;;
     sa8620p)
         COMMON_CFLAGS="-Wall -Wextra -Wno-unused-parameter -fPIC"
@@ -165,7 +179,7 @@ case "$TARGET" in
         COMMON_LDFLAGS="--sysroot=$SYS_ROOT -Wl,--as-needed"
         COMMON_LDFLAGS="$COMMON_LDFLAGS -L$SYS_ROOT/usr/lib -L$SYS_ROOT/usr/lib64 -L$SYS_ROOT/lib -L$SYS_ROOT/lib64"
         COMMON_LDFLAGS="$COMMON_LDFLAGS -Wl,-rpath-link,$SYS_ROOT/usr/lib:$SYS_ROOT/usr/lib64:$SYS_ROOT/lib:$SYS_ROOT/lib64"
-        COMMON_LDFLAGS="$COMMON_LDFLAGS -lstdc++ -lm -lpthread"
+        COMMON_LDFLAGS="$COMMON_LDFLAGS -lstdc++ -lpthread -lm"
         ../configure \
             --prefix=$OUTPUT \
             --host=aarch64-oe-linux \
@@ -182,8 +196,42 @@ case "$TARGET" in
             CFLAGS="$COMMON_CFLAGS" \
             CXXFLAGS="$COMMON_CXXFLAGS" \
             LDFLAGS="$COMMON_LDFLAGS"
-            LIBS="-lstdc++ -lm -lpthread"
+            LIBS="-lstdc++ -lpthread -lm"
         ;;
+    j6e)
+        COMMON_CFLAGS="-Wall -Wextra -Wno-unused-parameter -fPIC"
+        COMMON_CFLAGS="$COMMON_CFLAGS -D__NEXUS__ -D__NEXUS_J6E__"
+        COMMON_CFLAGS="$COMMON_CFLAGS --sysroot=$SYS_ROOT"
+        COMMON_CFLAGS="$COMMON_CFLAGS -I$GCC_PATH/include -I$GCC_PATH/lib/gcc/aarch64-none-linux-gnu/12.2.1/include"
+        COMMON_CFLAGS="$COMMON_CFLAGS -I$GCC_PATH/lib/gcc/aarch64-none-linux-gnu/12.2.1/install-tools"
+        COMMON_CFLAGS="$COMMON_CFLAGS -I$GCC_PATH/lib/gcc/aarch64-none-linux-gnu/12.2.1/include-fixed"
+        COMMON_CFLAGS="$COMMON_CFLAGS -I$GCC_PATH/aarch64-none-linux-gnu/include/c++/12.2.1"
+        COMMON_CFLAGS="$COMMON_CFLAGS -I$SYS_ROOT/usr/include"
+        COMMON_CFLAGS="$COMMON_CFLAGS -I$SYS_ROOT/usr/hobot/include"
+        COMMON_CXXFLAGS="$COMMON_CFLAGS"
+        COMMON_LDFLAGS="$COMMON_LDFLAGS -lstdc++ -lpthread -lm"
+        COMMON_LDFLAGS="$COMMON_LDFLAGS -Wl,--as-needed"
+        COMMON_LDFLAGS="$COMMON_LDFLAGS -Wl,-rpath-link,$SYS_ROOT/usr/lib:$SYS_ROOT/usr/lib/aarch64-linux-gnu:$SYS_ROOT/usr/hobot/lib:$SYS_ROOT/usr/hobot/lib/aarch64-linux-gnu"
+        COMMON_LDFLAGS="$COMMON_LDFLAGS -L$GCC_PATH/aarch64-none-linux-gnu/lib64"
+        ../configure \
+            --prefix=$OUTPUT \
+            --host=aarch64-oe-linux \
+            --disable-static \
+            --enable-shared \
+            --enable-cxx \
+            --enable-stdcxx \
+            --enable-prof \
+            --enable-stats \
+            CC=$CC \
+            CXX=$CXX \
+            AR=$AR \
+            RANLIB=$RANLIB \
+            CFLAGS="$COMMON_CFLAGS" \
+            CXXFLAGS="$COMMON_CXXFLAGS" \
+            LDFLAGS="$COMMON_LDFLAGS"
+            LIBS="-lstdc++ -lpthread -lm"
+        ;;
+
     *)
         ;;
 esac
