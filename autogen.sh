@@ -35,8 +35,8 @@ case "$TARGET" in
         ;;
     sa8620p)
         export CROSSTOOL_PATH="/home/shaneye/Workspace/crosstools/nexus_sa8620p"
-        export GCC_PATH="$CROSSTOOL_PATH/toolchain/aarch64/aarch64_sa8620p"
-        export SYS_ROOT="$CROSSTOOL_PATH/rootfs/sa8620p-ubuntu-base-22.04-aarch64"
+        export GCC_PATH="$CROSSTOOL_PATH/toolchain/aarch64/aarch64_sa8620p_0.2"
+        export SYS_ROOT="$CROSSTOOL_PATH/rootfs/sa8620p-ubuntu-base-22.04-aarch64_0.2"
         export GCC_HOST="$GCC_PATH/usr/bin/aarch64-oe-linux"
         export OUTPUT="$WORKPACE_PATH/build_sa8620p"
         ;;
@@ -147,16 +147,19 @@ case "$TARGET" in
             LDFLAGS="$COMMON_LDFLAGS"
         ;;
     sa8620p)
-        COMMON_CFLAGS="-Wall -Wextra -Wsign-compare -Wundef -Wno-format-zero-length -Wpointer-arith -Wno-missing-braces -Wno-missing-field-initializers -Wno-missing-attributes -pipe -g3"
+        COMMON_CFLAGS="-Wall -Wextra -Wno-unused-parameter -fPIC"
         COMMON_CFLAGS="$COMMON_CFLAGS -D__NEXUS__ -D__NEXUS_SA8620P__"
         COMMON_CFLAGS="$COMMON_CFLAGS --sysroot=$SYS_ROOT"
         COMMON_CFLAGS="$COMMON_CFLAGS -I$SYS_ROOT/usr/include"
-        COMMON_CFLAGS="$COMMON_CFLAGS -I$SYS_ROOT/usr/lib/aarch64-oe-linux/11.3.0/include"
-        COMMON_CFLAGS="$COMMON_CFLAGS -I$GCC_PATH/usr/include"
-        COMMON_CFLAGS="$COMMON_CFLAGS -I$GCC_PATH/usr/lib/aarch64-oe-linux/gcc/aarch64-oe-linux/11.3.0/include"
-        COMMON_CFLAGS="$COMMON_CFLAGS -I$GCC_PATH/usr/lib/aarch64-oe-linux/gcc/aarch64-oe-linux/11.3.0/include-fixed"
-        COMMON_CFLAGS="$COMMON_CFLAGS -std=gnu11"
-        COMMON_CXXFLAGS="$COMMON_CFLAGS -std=c++17"
+        COMMON_CFLAGS="$COMMON_CFLAGS -I$SYS_ROOT/usr/include/drm"
+        COMMON_CXXFLAGS="-I$SYS_ROOT/usr/include/c++/11.4.0"
+        COMMON_CXXFLAGS="$COMMON_CXXFLAGS -I$SYS_ROOT/usr/include/c++/11.4.0/aarch64-oe-linux"
+        COMMON_CXXFLAGS="$COMMON_CXXFLAGS -I$SYS_ROOT/usr/lib/aarch64-oe-linux/11.4.0/include"
+        COMMON_CXXFLAGS="$COMMON_CXXFLAGS -I$GCC_PATH/usr/include"
+        COMMON_CXXFLAGS="$COMMON_CXXFLAGS -I$GCC_PATH/usr/lib/aarch64-oe-linux/gcc/aarch64-oe-linux/11.4.0/include"
+        COMMON_CXXFLAGS="$COMMON_CXXFLAGS -I$GCC_PATH/usr/lib/aarch64-oe-linux/gcc/aarch64-oe-linux/11.4.0/include-fixed"
+        COMMON_CXXFLAGS="$COMMON_CXXFLAGS -std=gnu11"
+        COMMON_CXXFLAGS="$COMMON_CXXFLAGS -std=c++11"
         COMMON_LDFLAGS="--sysroot=$SYS_ROOT -Wl,--as-needed"
         COMMON_LDFLAGS="$COMMON_LDFLAGS -Wl,-rpath-link,$SYS_ROOT/usr/lib:$SYS_ROOT/usr/lib64:$SYS_ROOT/lib:$SYS_ROOT/lib64"
         ../configure \
@@ -166,15 +169,14 @@ case "$TARGET" in
             --enable-shared \
             --enable-cxx \
             --enable-prof \
-            --enable-stats \
             CC=$CC \
             CXX=$CXX \
             AR=$AR \
             RANLIB=$RANLIB \
             CFLAGS="$COMMON_CFLAGS" \
             CXXFLAGS="$COMMON_CXXFLAGS" \
-            LDFLAGS="$COMMON_LDFLAGS" \
-            LIBS="-lstdc++ -lpthread -lm"
+            LDFLAGS="$COMMON_LDFLAGS"
+            # LIBS="-lstdc++ -lpthread -lm"
         ;;
     *)
         ;;
