@@ -104,3 +104,5 @@ configure~
 *.sym
 
 build*
+jemalloc_test
+.vscode/settings.json

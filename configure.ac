@@ -1307,6 +1307,17 @@ if test "x$enable_experimental_smallocx" = "x1" ; then
 fi
 AC_SUBST([enable_experimental_smallocx])
 
+AC_ARG_ENABLE([navi],
+  [AS_HELP_STRING([--disable-navi], [Disable Navi])],
+if test "x$enable_navi" = "xno" ; then
+  enable_navi="0"
+else
+  enable_navi="1"
+fi
+,
+enable_navi="1"
+)
+
 dnl Do not enable profiling by default.
 AC_ARG_ENABLE([prof],
   [AS_HELP_STRING([--enable-prof], [Enable allocation profiling])],
@@ -1314,8 +1325,10 @@ AC_ARG_ENABLE([prof],
   enable_prof="0"
 else
   enable_prof="1"
-  AC_DEFINE([NAVI_MONITOR],[ ],[ ])
-  AC_DEFINE([NAVI_NO_PROFILE_OUTPUT],[ ],[ ])
+    if test "x$enable_navi" = "x1" ; then
+      AC_DEFINE([NAVI_MONITOR],[ ],[ ])
+      AC_DEFINE([NAVI_NO_PROFILE_OUTPUT],[ ],[ ])
+    fi
 fi
 ],
 [enable_prof="0"]

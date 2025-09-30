@@ -8,7 +8,6 @@
 #include "jemalloc/internal/prof_data.h"
 
 #ifdef NAVI_MONITOR
-
 #include <devctl.h>
 #include <sys/neutrino.h>
 typedef struct thread_heap_info_s{
@@ -187,7 +186,6 @@ prof_leave(tsd_t *tsd, prof_tdata_t *tdata) {
 
     if (tdata != NULL) {
         bool idump, gdump;
-
         assert(tdata->enq);
         tdata->enq = false;
         idump = tdata->enq_idump;
@@ -998,8 +996,8 @@ prof_tdata_dump_iter(prof_tdata_tree_t *tdatas_ptr, prof_tdata_t *tdata,
         thread_heap_info_t* thread_heap_info_p;
         thread_heap_info_p = arg->monitor_msg_p;
         thread_heap_info_p->tid = tdata->tid;
-            thread_heap_info_p->objs = tdata->cnt_summed.curobjs;
-            thread_heap_info_p->bytes = tdata->cnt_summed.curbytes;
+        thread_heap_info_p->objs = tdata->cnt_summed.curobjs;
+        thread_heap_info_p->bytes = tdata->cnt_summed.curbytes;
         arg->total_thread_cnt ++ ;
         arg->monitor_msg_p += sizeof(thread_heap_info_t);
     }
@@ -1024,10 +1022,10 @@ prof_dump_header(prof_dump_iter_arg_t *arg, const prof_cnt_t *cnt_all) {
     //send msg to monitor service
     if ((fd = open("/dev/monitor", O_RDONLY)) != -1) {
         buffer_len_esitimate = sizeof(proc_heap_info_t) +  MAX_THREAD_CNT * sizeof(thread_heap_info_t);
-                p_head = (void *) malloc(buffer_len_esitimate);
+            p_head = (void *) malloc(buffer_len_esitimate);
         if(p_head != NULL){
             proc_heap_info_p = (proc_heap_info_t*)p_head;
-                proc_heap_info_p->timestamp = time(NULL);
+            proc_heap_info_p->timestamp = time(NULL);
             proc_heap_info_p->pid = getpid();
             proc_heap_info_p->sampling = ((uint64_t)1U << lg_prof_sample);
             proc_heap_info_p->objs_all = cnt_all->curobjs;
@@ -1044,8 +1042,8 @@ prof_dump_header(prof_dump_iter_arg_t *arg, const prof_cnt_t *cnt_all) {
     if (fd != -1){
         if (proc_heap_info_p != NULL){
             proc_heap_info_p->thread_cnt = arg->total_thread_cnt ;
-            devctl( fd, MONITOR_SET_PROC_HEAP, p_head,
-                sizeof(proc_heap_info_t) +  arg->total_thread_cnt * sizeof(thread_heap_info_t), NULL);
+            devctl(fd, MONITOR_SET_PROC_HEAP, p_head,
+                sizeof(proc_heap_info_t) + arg->total_thread_cnt * sizeof(thread_heap_info_t), NULL);
             free(p_head);
         }
         close(fd);

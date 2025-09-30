@@ -1,12 +1,13 @@
 #!/bin/sh
 
 usage() {
-    echo "Usage: $0 <qnx710|qnx700|sa8620p>"
+    echo "Usage: $0 <qnx710|qnx700|sa8620p|j6e|local>"
     echo "Example:"
     echo "  $0 qnx710"
     echo "  $0 qnx700"
     echo "  $0 sa8620p"
     echo "  $0 j6e"
+    echo "  $0 local"
     exit 1
 }
 
@@ -48,6 +49,9 @@ case "$TARGET" in
         export GCC_HOST="$GCC_PATH/bin"
         export OUTPUT="$WORKPACE_PATH/build_j6e"
         ;;
+    local)
+        export OUTPUT="$WORKPACE_PATH/build_local"
+        ;;
     *)
         echo "Error: Unsupported target '$TARGET'. Choose 'qnx710', 'qnx700', 'sa8620p' or 'j6e'."
         usage
@@ -66,6 +70,12 @@ elif [ "$TARGET" = "j6e" ]; then
     export AR="$GCC_HOST/aarch64-none-linux-gnu-ar"
     export RANLIB="$GCC_HOST/aarch64-none-linux-gnu-ranlib"
     export PATH="$GCC_HOST:$PATH"
+elif [ "$TARGET" = "local" ]; then
+    export CC="/usr/bin/gcc"
+    export CXX="/usr/bin/g++"
+    export AR="/usr/bin/ar"
+    export RANLIB="/usr/bin/ranlib"
+    export PATH="$PATH"
 else
     export CC="aarch64-unknown-nto-qnx$QNX_VERSION-gcc"
     export CXX="aarch64-unknown-nto-qnx$QNX_VERSION-gcc"
@@ -74,7 +84,10 @@ else
     export PATH="$QNX_HOST/usr/bin:$PATH"
 fi
 
-if [ "$TARGET" = "sa8620p" || "$TARGET" = "j6e" ]; then
+
+if [ "$TARGET" = "local" ]; then
+    echo "Using local compiler"
+elif [ "$TARGET" = "sa8620p" || "$TARGET" = "j6e" ]; then
     echo "Using CROSSTOOL_PATH: $CROSSTOOL_PATH"
     echo "Using GCC_PATH: $GCC_PATH"
     echo "Using SYS_ROOT: $SYS_ROOT"
@@ -127,8 +140,8 @@ case "$TARGET" in
             CXX=$CXX \
             AR=$AR \
             RANLIB=$RANLIB \
-            CFLAGS="$COMMON_CFLAGS" \
-            CXXFLAGS="$COMMON_CXXFLAGS" \
+            CFLAGS="$COMMON_CFLAGS -g -O0 -fno-omit-frame-pointer" \
+            CXXFLAGS="$COMMON_CXXFLAGS -g -O0 -fno-omit-frame-pointer" \
             LDFLAGS="$COMMON_LDFLAGS" \
             LIBS="-lc++ -lc -lm -latomic"
         ;;
@@ -200,7 +213,7 @@ case "$TARGET" in
         ;;
     j6e)
         COMMON_CFLAGS="-Wall -Wextra -Wno-unused-parameter -fPIC"
-        COMMON_CFLAGS="$COMMON_CFLAGS -D__NEXUS__ -D__NEXUS_J6E__"
+        COMMON_CFLAGS="$COMMON_CFLAGS -D__NEXUS__ -D__NEXUS_J6E__ -DPAGE=65536"
         COMMON_CFLAGS="$COMMON_CFLAGS --sysroot=$SYS_ROOT"
         COMMON_CFLAGS="$COMMON_CFLAGS -I$GCC_PATH/include -I$GCC_PATH/lib/gcc/aarch64-none-linux-gnu/12.2.1/include"
         COMMON_CFLAGS="$COMMON_CFLAGS -I$GCC_PATH/lib/gcc/aarch64-none-linux-gnu/12.2.1/install-tools"
@@ -231,7 +244,20 @@ case "$TARGET" in
             LDFLAGS="$COMMON_LDFLAGS"
             LIBS="-lstdc++ -lpthread -lm"
         ;;
-
+    local)
+        ../configure \
+            --prefix=$OUTPUT \
+            --disable-static \
+            --enable-shared \
+            --enable-cxx \
+            --enable-stdcxx \
+            --enable-prof \
+            --enable-stats \
+            --enable-navi \
+            CFLAGS="-g -O0 -fno-omit-frame-pointer" \
+            CXXFLAGS="-g -O0 -fno-omit-frame-pointer"
+        $CXX -g -O0 -o jemalloc_test_$TARGET ../jemalloc_test.cc
+        ;;
     *)
         ;;
 esac
