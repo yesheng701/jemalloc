@@ -106,3 +106,5 @@ configure~
 build*
 jemalloc_test
 .vscode/settings.json
+output.log
+FlameGraph/*

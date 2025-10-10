@@ -253,7 +253,7 @@ case "$TARGET" in
             --enable-stdcxx \
             --enable-prof \
             --enable-stats \
-            --enable-navi \
+            --disable-navi \
             CFLAGS="-g -O0 -fno-omit-frame-pointer" \
             CXXFLAGS="-g -O0 -fno-omit-frame-pointer"
         $CXX -g -O0 -o jemalloc_test_$TARGET ../jemalloc_test.cc

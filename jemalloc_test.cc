@@ -10,16 +10,6 @@
 #include <thread>
 #include <vector>
 
-const size_t TARGET_MEMORY_PER_THREAD = []() {
-    const char* env_var = std::getenv("MAX_MEMORY");
-    if (env_var) {
-        size_t total_memory = std::stoull(env_var) * 1024 * 1024; // Convert MB to bytes
-        const size_t NUM_THREADS = 8;
-        return total_memory / NUM_THREADS;
-    }
-    return static_cast<size_t>(256 * 1024 * 1024); // 默认每个线程 256MB
-}();
-
 const size_t NUM_THREADS = []() {
     const char* env_var = std::getenv("THREAD_CNT");
     if (env_var) {
@@ -27,6 +17,15 @@ const size_t NUM_THREADS = []() {
         return num_threads;
     }
     return static_cast<size_t>(8);
+}();
+
+const size_t TARGET_MEMORY_PER_THREAD = []() {
+    const char* env_var = std::getenv("MAX_MEMORY");
+    if (env_var) {
+        size_t total_memory = std::stoull(env_var) * 1024 * 1024; // Convert MB to bytes
+        return total_memory / NUM_THREADS;
+    }
+    return static_cast<size_t>(256 * 1024 * 1024); // 默认每个线程 256MB
 }();
 
 const size_t TOTAL_TARGET_MEMORY      = NUM_THREADS * TARGET_MEMORY_PER_THREAD;  // ~2GB
@@ -205,6 +204,9 @@ void thread_work(int thread_id) {
 void signal_ctrl_c(int) { exit(0); }
 
 int main() {
+  freopen("output.log", "w", stdout);
+  freopen("output.log", "a", stderr);
+
   signal(SIGINT, signal_ctrl_c);
 
   std::cout << "=== C++ 内存分配器压力测试 ===" << std::endl;
@@ -237,7 +239,6 @@ int main() {
   auto overall_end = std::chrono::steady_clock::now();
   auto overall_duration = std::chrono::duration_cast<std::chrono::seconds>(
       overall_end - overall_start);
-
 
   std::cout << "\n=== 测试完成 ===" << std::endl;
   std::cout << "总分配尝试: " << allocation_attempts.load() << std::endl;

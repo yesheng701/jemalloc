@@ -15,13 +15,25 @@
                     "name": "LD_PRELOAD",
                     "value": "${workspaceFolder}/build_local/lib/libjemalloc.so"
                 },
+                // {
+                //     "name": "MALLOC_CONF",
+                //     "value": "prof:true,prof_active:true,prof_final:true,prof_prefix:${workspaceFolder}/jeprof.out"
+                // },
+                // {
+                //     "name": "MALLOC_CONF",
+                //     "value": "prof:true,prof_active:true,lg_prof_sample:19,lg_prof_interval:19,prof_final:true,prof_prefix:${workspaceFolder}/jeprof.out"
+                // },
                 {
                     "name": "MALLOC_CONF",
-                    "value": "prof:true,prof_active:true,prof_final:true,prof_prefix:${workspaceFolder}/jemalloc_prof"
+                    "value": "prof:true,prof_active:true,prof_final:true,prof_leak:true,prof_prefix:${workspaceFolder}/jeprof.out"
                 },
                 {
                     "name": "MAX_MEMORY",
-                    "value": "4"
+                    "value": "4096"
+                },
+                {
+                    "name": "THREAD_CNT",
+                    "value": "8"
                 }
             ],
             "externalConsole": false,
@@ -35,39 +47,5 @@
                 }
             ],
         },
-        {
-            "name": "Run with jemalloc_test(QNX710)",
-            "type": "cppdbg",
-            "request": "launch",
-            "preLaunchTask": "",
-            "program": "${workspaceFolder}/build_qnx710/jemalloc_test_qnx710",
-            "args": [],
-            "stopAtEntry": false,
-            "cwd": "${workspaceFolder}",
-            "environment": [
-                {
-                    "name": "LD_PRELOAD",
-                    "value": "${workspaceFolder}/build_qnx710/lib/libjemalloc.so"
-                },
-                {
-                    "name": "MALLOC_CONF",
-                    "value": "prof:true,prof_active:true,prof_final:true,prof_prefix:${workspaceFolder}/jemalloc_prof"
-                },
-                {
-                    "name": "MAX_MEMORY",
-                    "value": "4"
-                }
-            ],
-            "externalConsole": false,
-            "MIMode": "gdb",
-            "miDebuggerPath": "/home/shaneye/Workspace/crosstools/qnx710_8255/toolchain/aarch64/aarch64_qnx710_8255/host/linux/x86_64/usr/bin/aarch64-unknown-nto-qnx7.1.0-gdb",
-            "setupCommands": [
-                {
-                    "description": "Enable pretty-printing for gdb",
-                    "text": "-enable-pretty-printing",
-                    "ignoreFailures": true
-                }
-            ],
-        }
     ]
 }
