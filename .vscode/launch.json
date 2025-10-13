@@ -25,7 +25,7 @@
                 // },
                 {
                     "name": "MALLOC_CONF",
-                    "value": "prof:true,prof_active:true,prof_final:true,prof_leak:true,prof_prefix:${workspaceFolder}/jeprof.out"
+                    "value": "prof:true,prof_active:true,prof_final:true,prof_leak:true,prof_prefix:${workspaceFolder}/jeprof.out,prof_accum:true,stats_print:true"
                 },
                 {
                     "name": "MAX_MEMORY",

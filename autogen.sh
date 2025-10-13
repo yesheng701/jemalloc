@@ -181,14 +181,13 @@ case "$TARGET" in
         COMMON_CFLAGS="$COMMON_CFLAGS --sysroot=$SYS_ROOT"
         COMMON_CFLAGS="$COMMON_CFLAGS -I$SYS_ROOT/usr/include"
         COMMON_CFLAGS="$COMMON_CFLAGS -I$SYS_ROOT/usr/include/drm"
-        COMMON_CXXFLAGS="-I$SYS_ROOT/usr/include/c++/11.4.0"
-        COMMON_CXXFLAGS="$COMMON_CXXFLAGS -I$SYS_ROOT/usr/include/c++/11.4.0/aarch64-oe-linux"
-        COMMON_CXXFLAGS="$COMMON_CXXFLAGS -I$SYS_ROOT/usr/lib/aarch64-oe-linux/11.4.0/include"
-        COMMON_CXXFLAGS="$COMMON_CXXFLAGS -I$GCC_PATH/usr/include"
-        COMMON_CXXFLAGS="$COMMON_CXXFLAGS -I$GCC_PATH/usr/lib/aarch64-oe-linux/gcc/aarch64-oe-linux/11.4.0/include"
-        COMMON_CXXFLAGS="$COMMON_CXXFLAGS -I$GCC_PATH/usr/lib/aarch64-oe-linux/gcc/aarch64-oe-linux/11.4.0/include-fixed"
-        COMMON_CXXFLAGS="$COMMON_CXXFLAGS -std=gnu11"
-        COMMON_CXXFLAGS="$COMMON_CXXFLAGS -std=c++11"
+        COMMON_CFLAGS="$COMMON_CFLAGS -I$SYS_ROOT/usr/include/c++/11.4.0"
+        COMMON_CFLAGS="$COMMON_CFLAGS -I$SYS_ROOT/usr/include/c++/11.4.0/aarch64-oe-linux"
+        COMMON_CFLAGS="$COMMON_CFLAGS -I$SYS_ROOT/usr/lib/aarch64-oe-linux/11.4.0/include"
+        COMMON_CFLAGS="$COMMON_CFLAGS -I$GCC_PATH/usr/lib/aarch64-oe-linux/gcc/aarch64-oe-linux/11.4.0/include"
+        COMMON_CFLAGS="$COMMON_CFLAGS -I$GCC_PATH/usr/lib/aarch64-oe-linux/gcc/aarch64-oe-linux/11.4.0/include-fixed"
+        COMMON_CFLAGS="$COMMON_CFLAGS -std=c++17"
+        COMMON_CXXFLAGS="$COMMON_CFLAGS"
         COMMON_LDFLAGS="--sysroot=$SYS_ROOT -Wl,--as-needed"
         COMMON_LDFLAGS="$COMMON_LDFLAGS -L$SYS_ROOT/usr/lib -L$SYS_ROOT/usr/lib64 -L$SYS_ROOT/lib -L$SYS_ROOT/lib64"
         COMMON_LDFLAGS="$COMMON_LDFLAGS -Wl,-rpath-link,$SYS_ROOT/usr/lib:$SYS_ROOT/usr/lib64:$SYS_ROOT/lib:$SYS_ROOT/lib64"
@@ -202,6 +201,7 @@ case "$TARGET" in
             --enable-stdcxx \
             --enable-prof \
             --enable-stats \
+            --disable-navi \
             CC=$CC \
             CXX=$CXX \
             AR=$AR \
@@ -209,7 +209,6 @@ case "$TARGET" in
             CFLAGS="$COMMON_CFLAGS" \
             CXXFLAGS="$COMMON_CXXFLAGS" \
             LDFLAGS="$COMMON_LDFLAGS"
-            LIBS="-lstdc++ -lpthread -lm"
         ;;
     j6e)
         COMMON_CFLAGS="-Wall -Wextra -Wno-unused-parameter -fPIC"
@@ -221,6 +220,7 @@ case "$TARGET" in
         COMMON_CFLAGS="$COMMON_CFLAGS -I$GCC_PATH/aarch64-none-linux-gnu/include/c++/12.2.1"
         COMMON_CFLAGS="$COMMON_CFLAGS -I$SYS_ROOT/usr/include"
         COMMON_CFLAGS="$COMMON_CFLAGS -I$SYS_ROOT/usr/hobot/include"
+        COMMON_CFLAGS="$COMMON_CFLAGS -std=c++17"
         COMMON_CXXFLAGS="$COMMON_CFLAGS"
         COMMON_LDFLAGS="$COMMON_LDFLAGS -lstdc++ -lpthread -lm"
         COMMON_LDFLAGS="$COMMON_LDFLAGS -Wl,--as-needed"
@@ -235,6 +235,8 @@ case "$TARGET" in
             --enable-stdcxx \
             --enable-prof \
             --enable-stats \
+            --disable-navi \
+            --with-lg-page=16 \
             CC=$CC \
             CXX=$CXX \
             AR=$AR \
@@ -248,6 +250,7 @@ case "$TARGET" in
         ../configure \
             --prefix=$OUTPUT \
             --disable-static \
+            --enable-debug \
             --enable-shared \
             --enable-cxx \
             --enable-stdcxx \
