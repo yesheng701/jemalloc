@@ -84,14 +84,13 @@ else
     export PATH="$QNX_HOST/usr/bin:$PATH"
 fi
 
-
 if [ "$TARGET" = "local" ]; then
     echo "Using local compiler"
-elif [ "$TARGET" = "sa8620p" || "$TARGET" = "j6e" ]; then
+elif [ "$TARGET" = "sa8620p" ] || [ "$TARGET" = "j6e" ]; then
     echo "Using CROSSTOOL_PATH: $CROSSTOOL_PATH"
     echo "Using GCC_PATH: $GCC_PATH"
     echo "Using SYS_ROOT: $SYS_ROOT"
-else
+elif [ "$TARGET" = "qnx700" ] || [ "$TARGET" = "qnx710" ]; then
     echo "Using QNX_HOST: $QNX_HOST"
     echo "Using QNX_TARGET: $QNX_TARGET"
     echo "Using SYS_ROOT: $SYS_ROOT"
