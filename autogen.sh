@@ -1,10 +1,11 @@
 #!/bin/sh
 
 usage() {
-    echo "Usage: $0 <qnx710|qnx700|sa8620p|j6e|local>"
+    echo "Usage: $0 <qnx710|qnx700|qnx800|sa8620p|j6e|local>"
     echo "Example:"
     echo "  $0 qnx710"
     echo "  $0 qnx700"
+    echo "  $0 qnx800"
     echo "  $0 sa8620p"
     echo "  $0 j6e"
     echo "  $0 local"
@@ -34,6 +35,14 @@ case "$TARGET" in
         export QNX_HOST="$QNX_BASE/toolchain/aarch64/aarch64_qnx700_8155/host/linux/x86_64"
         export QNX_TARGET="$QNX_BASE/toolchain/aarch64/aarch64_qnx700_8155/target/qnx7"
         export OUTPUT="$WORKPACE_PATH/build_qnx700"
+        ;;
+    qnx800)
+        export QNX_VERSION="8.0.0"
+        export QNX_BASE="/home/shaneye/Workspace/crosstools/qnx800_j6b"
+        export SYS_ROOT="$QNX_BASE/rootfs/ubuntu-base-22.04-arm64-j6b-qnx8.0"
+        export QNX_HOST="$QNX_BASE/toolchain/aarch64/aarch64_qnx800_j6b/host/linux/x86_64"
+        export QNX_TARGET="$QNX_BASE/toolchain/aarch64/aarch64_qnx800_j6b/target/qnx"
+        export OUTPUT="$WORKPACE_PATH/build_qnx800"
         ;;
     sa8620p)
         export CROSSTOOL_PATH="/home/shaneye/Workspace/crosstools/nexus_sa8620p"
@@ -90,7 +99,7 @@ elif [ "$TARGET" = "sa8620p" ] || [ "$TARGET" = "j6e" ]; then
     echo "Using CROSSTOOL_PATH: $CROSSTOOL_PATH"
     echo "Using GCC_PATH: $GCC_PATH"
     echo "Using SYS_ROOT: $SYS_ROOT"
-elif [ "$TARGET" = "qnx700" ] || [ "$TARGET" = "qnx710" ]; then
+elif [ "$TARGET" = "qnx700" ] || [ "$TARGET" = "qnx710" ] || [ "$TARGET" = "qnx800" ]; then
     echo "Using QNX_HOST: $QNX_HOST"
     echo "Using QNX_TARGET: $QNX_TARGET"
     echo "Using SYS_ROOT: $SYS_ROOT"
@@ -116,6 +125,33 @@ mkdir -p $OUTPUT && cd $OUTPUT
 echo "Configuring for $TARGET..."
 
 case "$TARGET" in
+    qnx800)
+        COMMON_CFLAGS="-Wall -Wextra -Wno-unused-parameter -fPIC"
+        COMMON_CFLAGS="$COMMON_CFLAGS -D_QNX_SOURCE --sysroot=$SYS_ROOT"
+        COMMON_CXXFLAGS="$COMMON_CFLAGS -std=c++14"
+        COMMON_CXXFLAGS="$COMMON_CXXFLAGS -nostdinc++ -isystem $QNX_TARGET/usr/include/c++/v1"
+        COMMON_LDFLAGS="--sysroot=$SYS_ROOT -nodefaultlibs"
+        COMMON_LDFLAGS="$COMMON_LDFLAGS -L$SYS_ROOT/usr/lib -L$QNX_TARGET/aarch64le/usr/lib"
+        COMMON_LDFLAGS="$COMMON_LDFLAGS -lc++ -lc -lm -latomic"
+        ../configure \
+            --prefix=$OUTPUT \
+            --host=aarch64-unknown-nto-qnx$QNX_VERSION \
+            --disable-static \
+            --enable-shared \
+            --enable-cxx \
+            --disable-stdcxx \
+            --enable-prof \
+            --enable-stats \
+            --disable-navi \
+            CC=$CC \
+            CXX=$CXX \
+            AR=$AR \
+            RANLIB=$RANLIB \
+            CFLAGS="$COMMON_CFLAGS -g -O0 -fno-omit-frame-pointer" \
+            CXXFLAGS="$COMMON_CXXFLAGS -g -O0 -fno-omit-frame-pointer" \
+            LDFLAGS="$COMMON_LDFLAGS" \
+            LIBS="-lc++ -lc -lm -latomic"
+        ;;
     qnx710)
         COMMON_CFLAGS="-Wall -Wextra -Wno-unused-parameter -fPIC"
         COMMON_CFLAGS="$COMMON_CFLAGS -D_QNX_SOURCE --sysroot=$SYS_ROOT"
@@ -145,25 +181,27 @@ case "$TARGET" in
             LIBS="-lc++ -lc -lm -latomic"
         ;;
     qnx700)
-        COMMON_CFLAGS="-Wall -Wextra -Wno-unused-parameter -fPIC"
-        COMMON_CFLAGS="$COMMON_CFLAGS -D_QNX_SOURCE -fno-stack-protector"
-        COMMON_CFLAGS="$COMMON_CFLAGS --sysroot=$SYS_ROOT"
+        COMMON_CFLAGS="-Wall -Wextra -Wno-unused-parameter -fPIC -fno-stack-protector"
+        COMMON_CFLAGS="$COMMON_CFLAGS -D__QNX__ -D_QNX_SOURCE -D_POSIX_C_SOURCE=200112L -DJEMALLOC_DSS"
+        COMMON_CFLAGS="$COMMON_CFLAGS --sysroot=$SYS_ROOT/aarch64le"
         COMMON_CFLAGS="$COMMON_CFLAGS -I$SYS_ROOT/usr/include -I$QNX_TARGET/usr/include"
         COMMON_CFLAGS="$COMMON_CFLAGS -I$QNX_HOST/usr/lib/gcc/aarch64-unknown-nto-qnx7.0.0/5.4.0/include"
         COMMON_CFLAGS="$COMMON_CFLAGS -nostdinc"
-        COMMON_CXXFLAGS="-Wall -Wextra -Wno-unused-parameter -fPIC"
-        COMMON_CXXFLAGS="$COMMON_CXXFLAGS -D_QNX_SOURCE --sysroot=$SYS_ROOT"
+        COMMON_CXXFLAGS="$COMMON_CFLAGS -std=c++11"
         COMMON_CXXFLAGS="$COMMON_CXXFLAGS -I$QNX_TARGET/usr/include/c++/5.4.0"
-        COMMON_CXXFLAGS="$COMMON_CXXFLAGS -I$QNX_TARGET/usr/include/c++/5.4.0/aarch64-unknown-nto-qnx7.0.0/"
-        COMMON_CXXFLAGS="$COMMON_CXXFLAGS -I$SYS_ROOT/usr/include -I$QNX_TARGET/usr/include"
+        COMMON_CXXFLAGS="$COMMON_CXXFLAGS -I$QNX_TARGET/usr/include/c++/5.4.0/aarch64-unknown-nto-qnx7.0.0"
+        COMMON_LDFLAGS="$COMMON_LDFLAGS -lc -lc++ -lm -latomic"
+        COMMON_LDFLAGS="$COMMON_LDFLAGS -Wl,--as-needed"
+        COMMON_LDFLAGS="$COMMON_LDFLAGS -Wl,-rpath-link,$QNX_TARGET/aarch64le/lib:$QNX_TARGET/aarch64le/usr/lib:$SYS_ROOT/aarch64le/lib:$SYS_ROOT/aarch64le/usr/lib"
         ../configure \
             --prefix=$OUTPUT \
             --host=aarch64-unknown-nto-qnx$QNX_VERSION \
+            --enable-debug \
             --disable-static \
             --enable-shared \
             --enable-prof \
             --enable-stats \
-            --disable-cxx \
+            --enable-cxx \
             --disable-stdcxx \
             --disable-prof-libgcc \
             --disable-prof-gcc \
@@ -172,7 +210,9 @@ case "$TARGET" in
             AR=$AR \
             RANLIB=$RANLIB \
             CFLAGS="$COMMON_CFLAGS" \
-            CXXFLAGS="$COMMON_CXXFLAGS"
+            CXXFLAGS="$COMMON_CXXFLAGS" \
+            LDFLAGS="$COMMON_LDFLAGS" \
+            LIBS="-lc++ -lc -lm -latomic"
         ;;
     sa8620p)
         COMMON_CFLAGS="-Wall -Wextra -Wno-unused-parameter -fPIC"
@@ -255,7 +295,6 @@ case "$TARGET" in
             --enable-stdcxx \
             --enable-prof \
             --enable-stats \
-            --disable-navi \
             CFLAGS="-g -O0 -fno-omit-frame-pointer" \
             CXXFLAGS="-g -O0 -fno-omit-frame-pointer"
         $CXX -g -O0 -o jemalloc_test_$TARGET ../jemalloc_test.cc
