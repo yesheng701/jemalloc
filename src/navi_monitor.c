@@ -41,6 +41,20 @@ void navi_monitor_init(void) {
         goto cleanup;
     }
 
+    if (st.st_size > 0 && st.st_size != sizeof(prof_record_t)) {
+        malloc_printf("<jemalloc>: shm size mismatch (expected %zu, got %lld), recreating...\n", sizeof(prof_record_t), (long long)st.st_size);
+        close(fd);
+        unlink("/dev/shmem/jemalloc_prof");
+        fd = open("/dev/shmem/jemalloc_prof", O_RDWR | O_CREAT, 0777);
+        if (fd < 0) {
+            malloc_printf("<jemalloc>: open failed during recreate: %d\n", errno);
+            sem_post(sem);
+            sem_close(sem);
+            return;
+        }
+        st.st_size = 0;
+    }
+
     if (st.st_size == 0) {
         if (fchmod(fd, 0777) != 0) {
             malloc_printf("<jemalloc>: fchmod failed: %d\n", errno);
