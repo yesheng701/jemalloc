@@ -8,24 +8,7 @@
 #include "jemalloc/internal/prof_data.h"
 
 #ifdef NAVI_MONITOR
-#include <devctl.h>
-#include <sys/neutrino.h>
-typedef struct thread_heap_info_s{
-    int tid;
-    uint64_t objs;
-    uint64_t bytes;
-}thread_heap_info_t;
-
-typedef struct proc_heap_info_s{
-    uint64_t timestamp;
-    int pid;
-    uint64_t sampling;
-    uint64_t objs_all;
-    uint64_t bytes_all;
-    int thread_cnt;
-}proc_heap_info_t;
-#define MONITOR_CMD_CODE      1
-#define MONITOR_SET_PROC_HEAP __DIOT(_DCMD_MISC,  MONITOR_CMD_CODE + 5,proc_heap_info_t)
+#include "jemalloc/internal/navi_monitor.h"
 #endif
 
 /*
@@ -771,10 +754,8 @@ struct prof_dump_iter_arg_s {
     tsdn_t *tsdn;
     write_cb_t *prof_dump_write;
     void *cbopaque;
-    void* monitor_msg_p;
-    int total_thread_cnt;
+    prof_heap_info_t *heap_info;
 };
-#define MAX_THREAD_CNT 300
 #else
 struct prof_dump_iter_arg_s {
     tsdn_t *tsdn;
@@ -992,15 +973,7 @@ prof_tdata_dump_iter(prof_tdata_tree_t *tdatas_ptr, prof_tdata_t *tdata,
     }
     arg->prof_dump_write(arg->cbopaque, "\n");
 #ifdef NAVI_MONITOR
-    if (arg->monitor_msg_p != NULL && tdata->tid <= MAX_THREAD_CNT){
-        thread_heap_info_t* thread_heap_info_p;
-        thread_heap_info_p = arg->monitor_msg_p;
-        thread_heap_info_p->tid = tdata->tid;
-        thread_heap_info_p->objs = tdata->cnt_summed.curobjs;
-        thread_heap_info_p->bytes = tdata->cnt_summed.curbytes;
-        arg->total_thread_cnt ++ ;
-        arg->monitor_msg_p += sizeof(thread_heap_info_t);
-    }
+    navi_monitor_add_thread(arg->heap_info, tdata->tid, tdata->cnt_summed.curobjs, tdata->cnt_summed.curbytes);
 #endif
 
     return NULL;
@@ -1009,46 +982,16 @@ prof_tdata_dump_iter(prof_tdata_tree_t *tdatas_ptr, prof_tdata_t *tdata,
 static void
 prof_dump_header(prof_dump_iter_arg_t *arg, const prof_cnt_t *cnt_all) {
 #ifdef NAVI_MONITOR
-    int fd = -1;
-    int buffer_len_esitimate;
-    void *p_head = NULL;
-    proc_heap_info_t* proc_heap_info_p = NULL;
+    arg->heap_info = navi_monitor_alloc_heap_info(cnt_all);
 #endif
     prof_dump_printf(arg->prof_dump_write, arg->cbopaque,
         "heap_v2/%"FMTu64"\n  t*: ", ((uint64_t)1U << lg_prof_sample));
     prof_dump_print_cnts(arg->prof_dump_write, arg->cbopaque, cnt_all);
     arg->prof_dump_write(arg->cbopaque, "\n");
-#ifdef NAVI_MONITOR
-    //send msg to monitor service
-    if ((fd = open("/dev/monitor", O_RDONLY)) != -1) {
-        buffer_len_esitimate = sizeof(proc_heap_info_t) +  MAX_THREAD_CNT * sizeof(thread_heap_info_t);
-            p_head = (void *) malloc(buffer_len_esitimate);
-        if(p_head != NULL){
-            proc_heap_info_p = (proc_heap_info_t*)p_head;
-            proc_heap_info_p->timestamp = time(NULL);
-            proc_heap_info_p->pid = getpid();
-            proc_heap_info_p->sampling = ((uint64_t)1U << lg_prof_sample);
-            proc_heap_info_p->objs_all = cnt_all->curobjs;
-            proc_heap_info_p->bytes_all = cnt_all->curbytes;
 
-            arg->monitor_msg_p = p_head + sizeof(proc_heap_info_t);
-        }
-    }
-#endif
     malloc_mutex_lock(arg->tsdn, &tdatas_mtx);
     tdata_tree_iter(&tdatas, NULL, prof_tdata_dump_iter, arg);
     malloc_mutex_unlock(arg->tsdn, &tdatas_mtx);
-#ifdef NAVI_MONITOR
-    if (fd != -1){
-        if (proc_heap_info_p != NULL){
-            proc_heap_info_p->thread_cnt = arg->total_thread_cnt ;
-            devctl(fd, MONITOR_SET_PROC_HEAP, p_head,
-                sizeof(proc_heap_info_t) + arg->total_thread_cnt * sizeof(thread_heap_info_t), NULL);
-            free(p_head);
-        }
-        close(fd);
-    }
-#endif
 }
 
 static void
@@ -1195,7 +1138,7 @@ prof_dump_impl(tsd_t *tsd, write_cb_t *prof_dump_write, void *cbopaque,
     prof_dump_prep(tsd, tdata, &cnt_all, &leak_ngctx, &gctxs);
 #ifdef NAVI_MONITOR
     prof_dump_iter_arg_t prof_dump_iter_arg = {tsd_tsdn(tsd),
-        prof_dump_write, cbopaque, NULL, 0};
+        prof_dump_write, cbopaque, NULL};
 #else
     prof_dump_iter_arg_t prof_dump_iter_arg = {tsd_tsdn(tsd),
         prof_dump_write, cbopaque};
