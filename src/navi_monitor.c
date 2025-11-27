@@ -10,7 +10,7 @@
 #include <unistd.h>
 #include <stdatomic.h>
 #include <errno.h>
-#include <string.h>
+#include <semaphore.h>
 
 static prof_record_t *prof_shm_ptr = NULL;
 
@@ -21,15 +21,16 @@ void navi_monitor_init(void) {
         return;
     }
 
-    struct flock lock;
-    memset(&lock, 0, sizeof(lock));
-    lock.l_type = F_WRLCK;
-    lock.l_whence = SEEK_SET;
-    lock.l_start = 0;
-    lock.l_len = 0;
+    sem_t *sem = sem_open("/jemalloc_prof_sem", O_CREAT, 0777, 1);
+    if (sem == SEM_FAILED) {
+        malloc_printf("<jemalloc>: sem_open failed: %d\n", errno);
+        close(fd);
+        return;
+    }
 
-    if (fcntl(fd, F_SETLKW, &lock) == -1) {
-        malloc_printf("<jemalloc>: fcntl lock failed: %d\n", errno);
+    if (sem_wait(sem) != 0) {
+        malloc_printf("<jemalloc>: sem_wait failed: %d\n", errno);
+        sem_close(sem);
         close(fd);
         return;
     }
@@ -61,8 +62,8 @@ void navi_monitor_init(void) {
     prof_shm_ptr = (prof_record_t *)ptr;
 
 cleanup:
-    lock.l_type = F_UNLCK;
-    fcntl(fd, F_SETLK, &lock);
+    sem_post(sem);
+    sem_close(sem);
     close(fd);
 }
 
@@ -78,7 +79,7 @@ prof_heap_info_t *navi_monitor_alloc_heap_info(const prof_cnt_t *cnt_all, int32_
         heap_info->timestamp = (uint64_t)time(NULL);
         heap_info->pid = getpid();
         heap_info->sample = (uint8_t)lg_prof_sample;
-        heap_info->interval = 0;
+        heap_info->interval = (uint8_t)opt_lg_prof_interval;
         heap_info->objs_all = (uint32_t)cnt_all->curobjs;
         heap_info->bytes_all = cnt_all->curbytes;
         heap_info->thread_cnt = 0;
@@ -92,12 +93,18 @@ prof_heap_info_t *navi_monitor_alloc_heap_info(const prof_cnt_t *cnt_all, int32_
     return NULL;
 }
 
-void navi_monitor_add_thread(prof_heap_info_t *heap_info, int32_t tid, uint64_t objs, uint64_t bytes) {
+void navi_monitor_add_thread(prof_heap_info_t *heap_info, int32_t tid, uint64_t objs, uint64_t bytes, const char *name) {
     if (heap_info != NULL) {
         int idx = (heap_info->thread_offset + heap_info->thread_cnt) % MAX_TOTAL_THREADS;
-        prof_shm_ptr->thread_infos[idx].tid = tid;
-        prof_shm_ptr->thread_infos[idx].objs = objs;
+        prof_shm_ptr->thread_infos[idx].tid = (uint32_t)tid;
+        prof_shm_ptr->thread_infos[idx].objs = (uint32_t)objs;
         prof_shm_ptr->thread_infos[idx].bytes = bytes;
+        if (name != NULL) {
+            strncpy(prof_shm_ptr->thread_infos[idx].name, name, sizeof(prof_shm_ptr->thread_infos[idx].name) - 1);
+            prof_shm_ptr->thread_infos[idx].name[sizeof(prof_shm_ptr->thread_infos[idx].name) - 1] = '\0';
+        } else {
+            prof_shm_ptr->thread_infos[idx].name[0] = '\0';
+        }
         heap_info->thread_cnt++;
     }
 }

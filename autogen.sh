@@ -142,7 +142,6 @@ case "$TARGET" in
             --disable-stdcxx \
             --enable-prof \
             --enable-stats \
-            --disable-navi \
             CC=$CC \
             CXX=$CXX \
             AR=$AR \

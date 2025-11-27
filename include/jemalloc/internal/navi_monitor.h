@@ -11,20 +11,21 @@
 #define MAX_TOTAL_THREADS 300000
 
 typedef struct prof_thread_info_s {
-    int32_t tid;
-    uint64_t objs;
     uint64_t bytes;
+    uint32_t objs;
+    uint32_t tid;
+    char name[16];
 } prof_thread_info_t;
 
 typedef struct prof_heap_info_s {
     uint64_t timestamp;
-    int32_t pid;
+    uint64_t bytes_all;
+    uint32_t objs_all;
+    uint32_t pid;
+    uint32_t thread_offset;
+    uint16_t thread_cnt;
     uint8_t sample;
     uint8_t interval;
-    uint32_t objs_all;
-    uint64_t bytes_all;
-    int32_t thread_cnt;
-    int32_t thread_offset;
 } prof_heap_info_t;
 
 typedef struct prof_record_s {
@@ -36,7 +37,7 @@ typedef struct prof_record_s {
 
 void navi_monitor_init(void);
 prof_heap_info_t *navi_monitor_alloc_heap_info(const prof_cnt_t *cnt_all, int32_t thread_cnt);
-void navi_monitor_add_thread(prof_heap_info_t *heap_info, int32_t tid, uint64_t objs, uint64_t bytes);
+void navi_monitor_add_thread(prof_heap_info_t *heap_info, int32_t tid, uint64_t objs, uint64_t bytes, const char *name);
 
 #endif /* NAVI_MONITOR */
 
