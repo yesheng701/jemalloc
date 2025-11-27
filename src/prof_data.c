@@ -973,7 +973,7 @@ prof_tdata_dump_iter(prof_tdata_tree_t *tdatas_ptr, prof_tdata_t *tdata,
     }
     arg->prof_dump_write(arg->cbopaque, "\n");
 #ifdef NAVI_MONITOR
-    navi_monitor_add_thread(arg->heap_info, tdata->tid, tdata->cnt_summed.curobjs, tdata->cnt_summed.curbytes, tdata->thread_name);
+    navi_monitor_add_thread(arg->heap_info, tdata->tid, tdata->cnt_summed.curobjs, tdata->cnt_summed.curbytes);
 #endif
 
     return NULL;

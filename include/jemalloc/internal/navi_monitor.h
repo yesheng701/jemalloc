@@ -10,12 +10,11 @@
 #define MAX_HEAP_CNT 100000
 #define MAX_TOTAL_THREADS 300000
 
-// sizeof(prof_thread_info_t): 32 bytes
+// sizeof(prof_thread_info_t): 16 bytes
 typedef struct prof_thread_info_s {
     uint64_t bytes;
     uint32_t objs;
     uint32_t tid;
-    char name[16];
 } prof_thread_info_t;
 
 // sizeof(prof_heap_info_t): 32 bytes
@@ -40,7 +39,7 @@ typedef struct prof_record_s {
 
 void navi_monitor_init(void);
 prof_heap_info_t *navi_monitor_alloc_heap_info(const prof_cnt_t *cnt_all, int32_t thread_cnt);
-void navi_monitor_add_thread(prof_heap_info_t *heap_info, int32_t tid, uint64_t objs, uint64_t bytes, const char *name);
+void navi_monitor_add_thread(prof_heap_info_t *heap_info, int32_t tid, uint64_t objs, uint64_t bytes);
 
 #endif /* NAVI_MONITOR */
 

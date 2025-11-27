@@ -107,18 +107,12 @@ prof_heap_info_t *navi_monitor_alloc_heap_info(const prof_cnt_t *cnt_all, int32_
     return NULL;
 }
 
-void navi_monitor_add_thread(prof_heap_info_t *heap_info, int32_t tid, uint64_t objs, uint64_t bytes, const char *name) {
+void navi_monitor_add_thread(prof_heap_info_t *heap_info, int32_t tid, uint64_t objs, uint64_t bytes) {
     if (heap_info != NULL) {
         int idx = (heap_info->thread_offset + heap_info->thread_cnt) % MAX_TOTAL_THREADS;
         prof_shm_ptr->thread_infos[idx].tid = (uint32_t)tid;
         prof_shm_ptr->thread_infos[idx].objs = (uint32_t)objs;
         prof_shm_ptr->thread_infos[idx].bytes = bytes;
-        if (name != NULL) {
-            strncpy(prof_shm_ptr->thread_infos[idx].name, name, sizeof(prof_shm_ptr->thread_infos[idx].name) - 1);
-            prof_shm_ptr->thread_infos[idx].name[sizeof(prof_shm_ptr->thread_infos[idx].name) - 1] = '\0';
-        } else {
-            prof_shm_ptr->thread_infos[idx].name[0] = '\0';
-        }
         heap_info->thread_cnt++;
     }
 }
