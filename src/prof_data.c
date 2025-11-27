@@ -982,7 +982,8 @@ prof_tdata_dump_iter(prof_tdata_tree_t *tdatas_ptr, prof_tdata_t *tdata,
 static void
 prof_dump_header(prof_dump_iter_arg_t *arg, const prof_cnt_t *cnt_all) {
 #ifdef NAVI_MONITOR
-    arg->heap_info = navi_monitor_alloc_heap_info(cnt_all);
+    size_t thread_cnt = prof_tdata_count();
+    arg->heap_info = navi_monitor_alloc_heap_info(cnt_all, (int32_t)thread_cnt);
 #endif
     prof_dump_printf(arg->prof_dump_write, arg->cbopaque,
         "heap_v2/%"FMTu64"\n  t*: ", ((uint64_t)1U << lg_prof_sample));
