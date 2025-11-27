@@ -7,9 +7,10 @@
 #ifdef NAVI_MONITOR
 
 #define MAX_THREAD_CNT 300
-#define MAX_HEAP_CNT 10000
+#define MAX_HEAP_CNT 100000
 #define MAX_TOTAL_THREADS 300000
 
+// sizeof(prof_thread_info_t): 32 bytes
 typedef struct prof_thread_info_s {
     uint64_t bytes;
     uint32_t objs;
@@ -17,6 +18,7 @@ typedef struct prof_thread_info_s {
     char name[16];
 } prof_thread_info_t;
 
+// sizeof(prof_heap_info_t): 32 bytes
 typedef struct prof_heap_info_s {
     uint64_t timestamp;
     uint64_t bytes_all;
@@ -28,6 +30,7 @@ typedef struct prof_heap_info_s {
     uint8_t interval;
 } prof_heap_info_t;
 
+// sizeof(prof_record_t): 12800016 bytes (12.2MB)
 typedef struct prof_record_s {
     _Atomic uint64_t heap_cursor;
     _Atomic uint64_t thread_cursor;
